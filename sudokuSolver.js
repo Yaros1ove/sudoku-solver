@@ -1,172 +1,209 @@
 function solveSudoku(board) {
-  //array of all expected values for fill
-  let allExpectedValues = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
-  //[line, column] : [expected values] of every single empty cell
-  let expectedMap = new Map()
-  //initialization of expectedMap
-  function initializeMap() {
-    for (let line = 0; line < 9; line++) {
-      for (let column = 0; column < 9; column++) {
-        if (board[line][column] === '.') {
-          let key = getKey(line, column)
-          expectedMap.set(key, [...allExpectedValues])
+  const allExpectedValues = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
+
+  function isCellEmpty(cell) {
+    return Array.isArray(cell)
+  }
+
+  function isSudokuSolved() {
+
+    for (const line of board) {
+      for (const cell of line) {
+
+        if (isCellEmpty(cell)) {
+          return false
         }
+
       }
     }
+
+    return true
   }
-  //set value in case of only 1 expected
-  function checkForLonelyExpectedValue(line, column) {
-    let expectedArray = getExpectedArray(line, column)
-    if (expectedArray.length === 1) {
-      let value = expectedArray[0]
-      setValue(line, column, value)
+
+  function getLineArrayByIndex(lineIndex) {
+    return board[lineIndex]
+  }
+
+  function getColumnArrayByIndex(columnIndex) {
+    const columnArray = []
+
+    for (const line of board) {
+      columnArray.push(line[columnIndex])
+    }
+
+    return columnArray
+  }
+
+  function getSquareArrayByIndex(squareIndex) {
+    const squareArray = []
+
+    const startLine = 3 * Math.floor(squareIndex / 3)
+    const startColumn = 3 * (squareIndex % 3)
+
+    for (let line = startLine; line < startLine + 3; line++) {
+      for (let column = startColumn; column < startColumn + 3; column++) {
+
+        const cell = board[line][column]
+        squareArray.push(cell)
+
+      }
+    }
+
+    return squareArray
+  }
+
+  function getSquareIndexFromLineAndColumnIndexes(lineIndex, columnIndex) {
+    return 3 * Math.floor(lineIndex / 3) + Math.floor(columnIndex / 3)
+  }
+
+  function setExpectedValuesInCells() {
+
+    for (const line of board) {
+      line.forEach((cell, index, line) => {
+
+        if (cell === '.') {
+          line[index] = [...allExpectedValues]
+        }
+
+      })
+    }
+
+  }
+
+  function isOnlyOneExpectedValueLeftInCell(cell) {
+    return cell.length === 1
+  }
+
+  function removeExpectedValueOfCellAndSetValueIfNeeded(line, column, value) {
+    if (!isValueInExpected(line, column, value)) return
+
+    const expectedValues = board[line][column]
+    const valueIndex = expectedValues.indexOf(value)
+    expectedValues.splice(valueIndex, 1)
+
+    if (isOnlyOneExpectedValueLeftInCell(line, column)) {
+      const expectedValueLeft = board[line][column][0]
+
+      setValueInCell(line, column, expectedValueLeft)
     }
   }
-  //get expectedMap key from line and column
-  function getKey(line, column) {
-    return line.toString() + column.toString()
-  }
-  //get all expected values of cell
-  function getExpectedArray(line, column) {
-    let key = getKey(line, column)
-    return expectedMap.get(key)
-  }
-  //remove value from expectedArray for cell
-  function removeExpectedValueInCell(line, column, value) {
-    if (!isInExpected(line, column, value)) return
-    let expectedArray = getExpectedArray(line, column)
-    let index = expectedArray.indexOf(value)
-    expectedArray.splice(index, 1)
-    checkForLonelyExpectedValue(line, column)
-  }
-  //set value for cell and delete expected values from map
-  function setValue(line, column, value) {
+
+  function setValueInCell(line, column, value) {
     board[line][column] = value
-    let key = getKey(line, column)
+
+    const key = getKeyFromLineAndColumn(line, column)
     expectedMap.delete(key)
-    removeExpectedInLine(line, [value])
-    removeExpectedInColumn(column, [value])
-    removeExpectedInSquare(line, column, [value])
+
+    removeExpectedValuesInLineAndColumnAndSquareForCell(line, column, [value])
   }
-  //remove all set values from expected in line, column and square
-  function removeAlreadyExistsFromExpected() {
+
+  function removeExpectedValuesInLineAndColumnAndSquareForCell(line, column, values) {
+
+    const lineArray = getLineArrayByIndex(line)
+    const columnArray = getColumnArrayByIndex(column)
+    const squareArray = getSquareArrayByIndex(getSquareIndexFromLineAndColumnIndexes(line, column))
+
+    removeExpectedValuesFromArray(lineArray, values)
+    removeExpectedValuesFromArray(columnArray, values)
+    removeExpectedValuesFromArray(squareArray, values)
+
+  }
+
+  function removeAlreadySetValuesFromExpected() {
+
     for (let line = 0; line < 9; line++) {
       for (let column = 0; column < 9; column++) {
-        if (board[line][column] !== '.') {
-          let value = board[line][column]
-          removeExpectedInLine(line, [value])
-          removeExpectedInColumn(column, [value])
-          removeExpectedInSquare(line, column, [value])
+
+        const cell = board[line][column]
+        if (!isCellEmpty(cell)) {
+
+          removeExpectedValuesInLineAndColumnAndSquareForCell(line, column, [cell])
+
         }
+
       }
     }
+
   }
-  //remove set value from expected in line
-  //values - array of set values
-  //indexesNotToTouch - array of indexes of cells we can't change
-  function removeExpectedInLine(line, values, indexesNotToTouch = []) {
-    for (let column = 0; column < 9; column++) {
-      if (board[line][column] === '.' && !indexesNotToTouch.includes(column)) {
-        for (let value of values) {
-          removeExpectedValueInCell(line, column, value)
+
+  function removeExpectedValuesFromArray(array, values) {
+
+    array.forEach((cell, index, array) => {
+      for (const value of values) {
+
+        if (isValueInExpected(cell, value)) {
+
+          const indexOfValue = cell.indexOf(value)
+          cell.splice(indexOfValue, 1)
+          if (isOnlyOneExpectedValueLeftInCell(cell)) {
+            array[index] = cell[0]
+          }
+
         }
+
       }
-    }
+    })
+
   }
-  //remove set value from expected in column
-  function removeExpectedInColumn(column, values, indexesNotToTouch = []) {
-    for (let line = 0; line < 9; line++) {
-      if (board[line][column] === '.' && !indexesNotToTouch.includes(line)) {
-        for (let value of values) {
-          removeExpectedValueInCell(line, column, value)
-        }
-      }
+
+  function isValueInExpected(cell, value) {
+    if (!isCellEmpty(cell)) return false
+
+    return cell.includes(value)
+  }
+
+  function setLonelyCellsWithExpectedValueInLinesAndColumnsAndSquares() {
+    for (let index = 0; index < 9; index++) {
+
+      const lineArray = getLineArrayByIndex(index)
+      const lineArrayValues = findLonelyCellsWithExpectedValueInArray(lineArray)
+      setValuesInLonelyCellsInArrayIfNeeded(lineArray, lineArrayValues)
+
+      const columnArray = getColumnArrayByIndex(index)
+      const columnArrayValues = findLonelyCellsWithExpectedValueInArray(columnArray)
+      setValuesInLonelyCellsInArrayIfNeeded(columnArray, columnArrayValues)
+
+      const squareArray = getSquareArrayByIndex(index)
+      const squareArrayValues = findLonelyCellsWithExpectedValueInArray(squareArray)
+      setValuesInLonelyCellsInArrayIfNeeded(squareArray, squareArrayValues)
 
     }
   }
-  //remove set value from expected in square
-  function removeExpectedInSquare(cellLine, cellColumn, values, keysNotToTouch = []) {
-    let startLine = cellLine - cellLine % 3
-    let startColumn = cellColumn - cellColumn % 3
-    for (let line = startLine; line < startLine + 3; line++) {
-      for (let column = startColumn; column < startColumn + 3; column++) {
-        let key = getKey(line, column)
-        if (board[line][column] === '.' && !keysNotToTouch.includes(key)) {
-          for (let value of values) {
-            removeExpectedValueInCell(line, column, value)
-          }
+
+  function findLonelyCellsWithExpectedValueInArray(array) {
+    const lonelyValues = []
+
+    for (const value of allExpectedValues) {
+      let valueCounter = 0
+
+      for (const cell of array) {
+
+        if (isValueInExpected(cell, value)) {
+          valueCounter++
         }
+
       }
+
+      if (valueCounter === 1) {
+        lonelyValues.push(value)
+      }
+
+    }
+
+    return lonelyValues
+  }
+
+  function setValuesInLonelyCellsInArrayIfNeeded(array, values) {
+    if (!values.length) return
+
+    for (const value of values) {
+
+      const cellIndex = array.findIndex(cell => isValueInExpected(cell, value))
+      array[cellIndex] = value
+
     }
   }
-  //check for value presence in expected of the cell
-  function isInExpected(line, column, value) {
-    if (board[line][column] !== '.') return false
-    let expectedArray = getExpectedArray(line, column)
-    return expectedArray.includes(value)
-  }
-  //check for only one place where we can set a value in line, column and square
-  function checkForLonelyCellWithExpectedValue() {
-    for (let line = 0; line < 9; line++) {
-      for (let column = 0; column < 9; column++) {
-        if (board[line][column] === '.') {
-          checkForLonelyCellLinear(line, column)    //in line and column
-          checkForLonelyCellSquare(line, column)    //in square
-        }
-      }
-    }
-  }
-  //check for only one place where we can set a value in line and column
-  function checkForLonelyCellLinear(line, column) {
-    let expectedArray = getExpectedArray(line, column)
-    let linearCounter = 0
-    let columnCounter = 0
-    for (let expectedValue of expectedArray) {
-      for (let helpIndex = 0; helpIndex < 9; helpIndex++) {
-        //in line
-        if (board[line][helpIndex] === '.') {
-          if (isInExpected(line, helpIndex, expectedValue)) {
-            linearCounter++
-          }
-        }
-        //in column
-        if (board[helpIndex][column] === '.') {
-          if (isInExpected(helpIndex, column, expectedValue)) {
-            columnCounter++
-          }
-        }
-      }
-      if (linearCounter === 1 || columnCounter === 1) {
-        setValue(line, column, expectedValue)
-        return
-      }
-    }
-  }
-  //check for only one place where we can set a value in square
-  function checkForLonelyCellSquare(cellLine, cellColumn) {
-    if (board[cellLine][cellColumn] !== '.') return
-    //top line of the square
-    let startLine = cellLine - cellLine % 3
-    //left column of the square
-    let startColumn = cellColumn - cellColumn % 3
-    let expectedArray = getExpectedArray(cellLine, cellColumn)
-    for (let expectedValue of expectedArray) {
-      let squareCounter = 0
-      for (let line = startLine; line < startLine + 3; line++) {
-        for (let column = startColumn; column < startColumn + 3; column++) {
-          if (board[line][column] === '.') {
-            if (isInExpected(line, column, expectedValue)) {
-              squareCounter++
-            }
-          }
-        }
-      }
-      if (squareCounter === 1) {
-        setValue(cellLine, cellColumn, expectedValue)
-        return
-      }
-    }
-  }
+
   //check all squares for if we can only set a value in line or column in square; then we know that this line or column can't exist same value in other squares
   function checkAllSquaresForExpectedLinesAndColumns() {
     for (let line = 0; line < 9; line += 3) {
@@ -179,18 +216,18 @@ function solveSudoku(board) {
   function checkSquareForExpectedLinesAndColumns(startLine, startColumn) {
     for (let line = startLine; line < startLine + 3; line++) {
       for (let column = startColumn; column < startColumn + 3; column++) {
-        if (board[line][column] === '.') {
-          let expectedArray = getExpectedArray(line, column)
+        if (isCellEmpty(board[line][column])) {
+          let expectedArray = board[line][column]
           for (let expectedValue of expectedArray) {
             //check for line
             if (checkSquareForExpectedLines(startLine, startColumn, expectedValue)) {
               let indexesNotToTouch = [startColumn, startColumn + 1, startColumn + 2]
-              removeExpectedInLine(line, [expectedValue], indexesNotToTouch)
+              removeExpectedValuesInCellLine(line, [expectedValue], indexesNotToTouch)
             }
             //check for columns
             if (checkSquareForExpectedColumns(startLine, startColumn, expectedValue)) {
               let indexesNotToTouch = [startLine, startLine + 1, startLine + 2]
-              removeExpectedInColumn(column, [expectedValue], indexesNotToTouch)
+              removeExpectedValuesInCellColumn(column, [expectedValue], indexesNotToTouch)
             }
           }
         }
@@ -202,8 +239,8 @@ function solveSudoku(board) {
     let presenceCounter = 0
     for (let line = startLine; line < startLine + 3; line++) {
       for (let column = startColumn; column < startColumn + 3; column++) {
-        if (board[line][column] === '.') {
-          let expectedArray = getExpectedArray(line, column)
+        if (isCellEmpty(board[line][column])) {
+          let expectedArray = board[line][column]
           if (expectedArray.includes(value)) {
             presenceCounter++
             break
@@ -219,8 +256,8 @@ function solveSudoku(board) {
     let presenceCounter = 0
     for (let column = startColumn; column < startColumn + 3; column++) {
       for (let line = startLine; line < startLine + 3; line++) {
-        if (board[line][column] === '.') {
-          let expectedArray = getExpectedArray(line, column)
+        if (isCellEmpty(board[line][column])) {
+          let expectedArray = board[line][column]
           if (expectedArray.includes(value)) {
             presenceCounter++
             break
@@ -231,31 +268,31 @@ function solveSudoku(board) {
     if (presenceCounter === 1) return true
     return false
   }
-  //check for presence of two cells with two equial expected values
+  //check for presence of two cells with two equal expected values
   function checkForPairedCells() {
     for (let line = 0; line < 9; line++) {
       for (let column = 0; column < 9; column++) {
-        if (board[line][column] === '.') {
-          let expectedArray = getExpectedArray(line, column)
+        if (isCellEmpty(board[line][column])) {
+          let expectedArray = board[line][column]
           if (expectedArray.length === 2) {
             //check for pair in line
             let pairColumnIndex = checkForPairInLine(line, column, expectedArray)
             if (pairColumnIndex !== -1) {
               let indexesNotToTouch = [column, pairColumnIndex]
-              removeExpectedInLine(line, expectedArray, indexesNotToTouch)
+              removeExpectedValuesInCellLine(line, expectedArray, indexesNotToTouch)
             }
             //check for pair in column
             let pairLineIndex = checkForPairInColumn(line, column, expectedArray)
             if (pairLineIndex !== -1) {
               let indexesNotToTouch = [line, pairLineIndex]
-              removeExpectedInColumn(column, expectedArray, indexesNotToTouch)
+              removeExpectedValuesInCellColumn(column, expectedArray, indexesNotToTouch)
             }
-            //check for pair i nsquare
+            //check for pair in square
             let pairKey = checkForPairInSquare(line, column, expectedArray)
             if (pairKey !== -1) {
-              let key = getKey(line, column)
+              let key = getKeyFromLineAndColumn(line, column)
               let indexesNotToTouch = [key, pairKey]
-              removeExpectedInSquare(line, column, expectedArray, indexesNotToTouch)
+              removeExpectedValuesInCellSquare(line, column, expectedArray, indexesNotToTouch)
             }
           }
         }
@@ -265,8 +302,8 @@ function solveSudoku(board) {
   //check for presence of pair in line
   function checkForPairInLine(line, columnIndex, expectedArray) {
     for (let column = 0; column < 9; column++) {
-      if (column !== columnIndex && board[line][column] === '.') {
-        let curExpectedArray = getExpectedArray(line, column)
+      if (column !== columnIndex && isCellEmpty(board[line][column])) {
+        let curExpectedArray = board[line][column]
         if (curExpectedArray.toString() === expectedArray.toString()) return column
       }
     }
@@ -275,8 +312,8 @@ function solveSudoku(board) {
   //check for presence of pair in column
   function checkForPairInColumn(lineIndex, column, expectedArray) {
     for (let line = 0; line < 9; line++) {
-      if (line !== lineIndex && board[line][column] === '.') {
-        let curExpectedArray = getExpectedArray(line, column)
+      if (line !== lineIndex && isCellEmpty(board[line][column])) {
+        let curExpectedArray = board[line][column]
         if (curExpectedArray.toString() === expectedArray.toString()) return line
       }
     }
@@ -288,15 +325,15 @@ function solveSudoku(board) {
     let startColumn = cellColumn - cellColumn % 3
     for (let line = startLine; line < startLine + 3; line++) {
       for (let column = startColumn; column < startColumn + 3; column++) {
-        if (!(line === cellLine && column === cellColumn) && board[line][column] === '.') {
-          let curExpectedArray = getExpectedArray(line, column)
-          if (curExpectedArray.toString() === expectedArray.toString()) return getKey(line, column)
+        if (!(line === cellLine && column === cellColumn) && isCellEmpty(board[line][column])) {
+          let curExpectedArray = board[line][column]
+          if (curExpectedArray.toString() === expectedArray.toString()) return getKeyFromLineAndColumn(line, column)
         }
       }
     }
     return -1
   }
-  //naked pair is a pair that has more then two expected in ncommon, but there are no more places for two expected values to be set
+  //naked pair is a pair that has more then two expected in common, but there are no more places for two expected values to be set
   function checkForNakedPairs() {
     for (let index = 0; index < 9; index++) {
       checkForNakedPairInLine(index)
@@ -314,7 +351,7 @@ function solveSudoku(board) {
     for (let expectedValue of allExpectedValues) {
       let indexes = []
       for (let column = 0; column < 9; column++) {
-        if (isInExpected(line, column, expectedValue)) {
+        if (isValueInExpected(line, column, expectedValue)) {
           indexes.push(column)
         }
       }
@@ -334,8 +371,8 @@ function solveSudoku(board) {
           if (!values.includes(value)) {
             let index1 = indexes[0][0]
             let index2 = indexes[0][1]
-            removeExpectedValueInCell(line, index1, value)
-            removeExpectedValueInCell(line, index2, value)
+            removeExpectedValueOfCellAndSetValueIfNeeded(line, index1, value)
+            removeExpectedValueOfCellAndSetValueIfNeeded(line, index2, value)
           }
         }
       }
@@ -346,7 +383,7 @@ function solveSudoku(board) {
     for (let expectedValue of allExpectedValues) {
       let indexes = []
       for (let line = 0; line < 9; line++) {
-        if (isInExpected(line, column, expectedValue)) {
+        if (isValueInExpected(line, column, expectedValue)) {
           indexes.push(line)
         }
       }
@@ -366,8 +403,8 @@ function solveSudoku(board) {
           if (!values.includes(value)) {
             let index1 = indexes[0][0]
             let index2 = indexes[0][1]
-            removeExpectedValueInCell(index1, column, value)
-            removeExpectedValueInCell(index2, column, value)
+            removeExpectedValueOfCellAndSetValueIfNeeded(index1, column, value)
+            removeExpectedValueOfCellAndSetValueIfNeeded(index2, column, value)
           }
         }
       }
@@ -379,7 +416,7 @@ function solveSudoku(board) {
       let indexes = []
       for (let line = startLine; line < startLine + 3; line++) {
         for (let column = startColumn; column < startColumn + 3; column++) {
-          if (isInExpected(line, column, expectedValue)) {
+          if (isValueInExpected(line, column, expectedValue)) {
             indexes.push([line, column])
           }
         }
@@ -403,8 +440,8 @@ function solveSudoku(board) {
             let column1 = indexes[0][1]
             let line2 = indexes[1][0]
             let column2 = indexes[1][1]
-            removeExpectedValueInCell(line1, column1, value)
-            removeExpectedValueInCell(line2, column2, value)
+            removeExpectedValueOfCellAndSetValueIfNeeded(line1, column1, value)
+            removeExpectedValueOfCellAndSetValueIfNeeded(line2, column2, value)
           }
         }
       }
@@ -440,13 +477,13 @@ function solveSudoku(board) {
       if (lineCheckResult) {
         let values = lineCheckResult[0]
         let indexesNotToTouch = lineCheckResult[1]
-        removeExpectedInLine(index, values, indexesNotToTouch)
+        removeExpectedValuesInCellLine(index, values, indexesNotToTouch)
       }
       let columnCheckResult = checkForNakedTripletInColumn(index)
       if (columnCheckResult) {
         let values = columnCheckResult[0]
         let indexesNotToTouch = columnCheckResult[1]
-        removeExpectedInColumn(index, values, indexesNotToTouch)
+        removeExpectedValuesInCellColumn(index, values, indexesNotToTouch)
       }
     }
 
@@ -456,7 +493,7 @@ function solveSudoku(board) {
         if (squareCheckResult) {
           let values = squareCheckResult[0]
           let keysNotToTouch = squareCheckResult[1]
-          removeExpectedInSquare(line, column, values, keysNotToTouch)
+          removeExpectedValuesInCellSquare(line, column, values, keysNotToTouch)
         }
       }
     }
@@ -465,13 +502,13 @@ function solveSudoku(board) {
     F1: for (let column1 = 0; column1 < 7; column1++) {
       F2: for (let column2 = column1 + 1; column2 < 8; column2++) {
         F3: for (let column3 = column2 + 1; column3 < 9; column3++) {
-          if (board[line][column1] !== '.') continue F1
-          if (board[line][column2] !== '.') continue F2
-          if (board[line][column3] !== '.') continue F3
+          if (!isCellEmpty(board[line][column1])) continue F1
+          if (!isCellEmpty(board[line][column2])) continue F2
+          if (!isCellEmpty(board[line][column3])) continue F3
 
-          let expectedArray1 = getExpectedArray(line, column1)
-          let expectedArray2 = getExpectedArray(line, column2)
-          let expectedArray3 = getExpectedArray(line, column3)
+          let expectedArray1 = board[line][column1]
+          let expectedArray2 = board[line][column2]
+          let expectedArray3 = board[line][column3]
 
           let checkResult = checkThreeExpectedArraysForTriplet(expectedArray1, expectedArray2, expectedArray3)
           if (checkResult) {
@@ -487,13 +524,13 @@ function solveSudoku(board) {
     F1: for (let line1 = 0; line1 < 7; line1++) {
       F2: for (let line2 = line1 + 1; line2 < 8; line2++) {
         F3: for (let line3 = line2 + 1; line3 < 9; line3++) {
-          if (board[line1][column] !== '.') continue F1
-          if (board[line2][column] !== '.') continue F2
-          if (board[line3][column] !== '.') continue F3
+          if (!isCellEmpty(board[line1][column])) continue F1
+          if (!isCellEmpty(board[line2][column])) continue F2
+          if (!isCellEmpty(board[line3][column])) continue F3
 
-          let expectedArray1 = getExpectedArray(line1, column)
-          let expectedArray2 = getExpectedArray(line2, column)
-          let expectedArray3 = getExpectedArray(line3, column)
+          let expectedArray1 = board[line1][column]
+          let expectedArray2 = board[line2][column]
+          let expectedArray3 = board[line3][column]
 
           let checkResult = checkThreeExpectedArraysForTriplet(expectedArray1, expectedArray2, expectedArray3)
           if (checkResult) {
@@ -509,20 +546,20 @@ function solveSudoku(board) {
     F1: for (let index1 = 0; index1 < 7; index1++) {
       F2: for (let index2 = index1 + 1; index2 < 8; index2++) {
         F3: for (let index3 = index2 + 1; index3 < 9; index3++) {
-          if (board[startLine + Math.floor(index1 / 3)][startColumn + index1 % 3] !== '.') continue F1
-          if (board[startLine + Math.floor(index2 / 3)][startColumn + index2 % 3] !== '.') continue F2
-          if (board[startLine + Math.floor(index3 / 3)][startColumn + index3 % 3] !== '.') continue F3
+          if (!isCellEmpty(board[startLine + Math.floor(index1 / 3)][startColumn + index1 % 3])) continue F1
+          if (!isCellEmpty(board[startLine + Math.floor(index2 / 3)][startColumn + index2 % 3])) continue F2
+          if (!isCellEmpty(board[startLine + Math.floor(index3 / 3)][startColumn + index3 % 3])) continue F3
 
-          let expectedArray1 = getExpectedArray(startLine + Math.floor(index1 / 3), startColumn + index1 % 3)
-          let expectedArray2 = getExpectedArray(startLine + Math.floor(index2 / 3), startColumn + index2 % 3)
-          let expectedArray3 = getExpectedArray(startLine + Math.floor(index3 / 3), startColumn + index3 % 3)
+          let expectedArray1 = board[startLine + Math.floor(index1 / 3)][startColumn + index1 % 3]
+          let expectedArray2 = board[startLine + Math.floor(index2 / 3)][startColumn + index2 % 3]
+          let expectedArray3 = board[startLine + Math.floor(index3 / 3)][startColumn + index3 % 3]
 
           let checkResult = checkThreeExpectedArraysForTriplet(expectedArray1, expectedArray2, expectedArray3)
           if (checkResult) {
             let keysNotToTouch = []
-            keysNotToTouch.push(getKey(startLine + Math.floor(index1 / 3), startColumn + index1 % 3))
-            keysNotToTouch.push(getKey(startLine + Math.floor(index2 / 3), startColumn + index2 % 3))
-            keysNotToTouch.push(getKey(startLine + Math.floor(index3 / 3), startColumn + index3 % 3))
+            keysNotToTouch.push(getKeyFromLineAndColumn(startLine + Math.floor(index1 / 3), startColumn + index1 % 3))
+            keysNotToTouch.push(getKeyFromLineAndColumn(startLine + Math.floor(index2 / 3), startColumn + index2 % 3))
+            keysNotToTouch.push(getKeyFromLineAndColumn(startLine + Math.floor(index3 / 3), startColumn + index3 % 3))
             return [checkResult, keysNotToTouch]
           }
         }
@@ -565,7 +602,7 @@ function solveSudoku(board) {
       for (let line = 0; line < 9; line++) {
         let indexes = []
         for (let column = 0; column < 9; column++) {
-          if (isInExpected(line, column, expectedValue)) {
+          if (isValueInExpected(line, column, expectedValue)) {
             indexes.push(column)
           }
         }
@@ -581,7 +618,7 @@ function solveSudoku(board) {
         for (let line = 0; line < 9; line++) {
           for (let column of columns) {
             if (!lines.includes(line)) {
-              removeExpectedValueInCell(line, column, expectedValue)
+              removeExpectedValueOfCellAndSetValueIfNeeded(line, column, expectedValue)
             }
           }
         }
@@ -594,7 +631,7 @@ function solveSudoku(board) {
       for (let column = 0; column < 9; column++) {
         let indexes = []
         for (let line = 0; line < 9; line++) {
-          if (isInExpected(line, column, expectedValue)) {
+          if (isValueInExpected(line, column, expectedValue)) {
             indexes.push(line)
           }
         }
@@ -610,7 +647,7 @@ function solveSudoku(board) {
         for (let column = 0; column < 9; column++) {
           for (let line of lines) {
             if (!columns.includes(column)) {
-              removeExpectedValueInCell(line, column, expectedValue)
+              removeExpectedValueOfCellAndSetValueIfNeeded(line, column, expectedValue)
             }
           }
         }
@@ -620,8 +657,8 @@ function solveSudoku(board) {
   function checkForXYZWing() {
     for (let line = 0; line < 9; line++) {
       for (let column = 0; column < 9; column++) {
-        if (board[line][column] === '.') {
-          let expectedArray = getExpectedArray(line, column)
+        if (isCellEmpty(board[line][column])) {
+          let expectedArray = board[line][column]
           if (expectedArray.length === 3) {
             checkForXYZWingInCellInLine(line, column)
             checkForXYZWingInCellInColumn(line, column)
@@ -635,16 +672,16 @@ function solveSudoku(board) {
     }
   }
   function checkForXYZWingInCellInLine(cellLine, cellColumn) {
-    let cellExpectedArray = getExpectedArray(cellLine, cellColumn)
+    let cellExpectedArray = board[cellLine][cellColumn]
     let startLine = cellLine - cellLine % 3
     let startColumn = cellColumn - cellColumn % 3
     for (let column = 0; column < 9; column++) {
-      if (board[cellLine][column] === '.' && column !== cellColumn) {
-        let lineCellExpectedArray = getExpectedArray(cellLine, column)
+      if (isCellEmpty(board[cellLine][column]) && column !== cellColumn) {
+        let lineCellExpectedArray = board[cellLine][column]
         for (let squareLine = startLine; squareLine < startLine + 3; squareLine++) {
           for (let squareColumn = startColumn; squareColumn < startColumn + 3; squareColumn++) {
-            if (board[squareLine][squareColumn] === '.' && squareLine !== cellLine) {
-              let squareCellExpectedArray = getExpectedArray(squareLine, squareColumn)
+            if (isCellEmpty(board[squareLine][squareColumn]) && squareLine !== cellLine) {
+              let squareCellExpectedArray = board[squareLine][squareColumn]
               let checkResult = checkThreeExpectedArraysForTriplet(cellExpectedArray, lineCellExpectedArray, squareCellExpectedArray)
               if (checkResult) {
                 let removalValue
@@ -655,8 +692,8 @@ function solveSudoku(board) {
                   }
                 }
                 for (let index = startColumn; index < startColumn + 3; index++) {
-                  if (board[cellLine][index] === '.' && index !== cellColumn) {
-                    removeExpectedValueInCell(cellLine, index, removalValue)
+                  if (isCellEmpty(board[cellLine][index]) && index !== cellColumn) {
+                    removeExpectedValueOfCellAndSetValueIfNeeded(cellLine, index, removalValue)
                   }
                 }
               }
@@ -667,16 +704,16 @@ function solveSudoku(board) {
     }
   }
   function checkForXYZWingInCellInColumn(cellLine, cellColumn) {
-    let cellExpectedArray = getExpectedArray(cellLine, cellColumn)
+    let cellExpectedArray = board[cellLine][cellColumn]
     let startLine = cellLine - cellLine % 3
     let startColumn = cellColumn - cellColumn % 3
     for (let line = 0; line < 9; line++) {
-      if (board[line][cellColumn] === '.' && line !== cellLine) {
-        let columnCellExpectedArray = getExpectedArray(line, cellColumn)
+      if (isCellEmpty(board[line][cellColumn]) && line !== cellLine) {
+        let columnCellExpectedArray = board[line][cellColumn]
         for (let squareLine = startLine; squareLine < startLine + 3; squareLine++) {
           for (let squareColumn = startColumn; squareColumn < startColumn + 3; squareColumn++) {
-            if (board[squareLine][squareColumn] === '.' && squareColumn !== cellColumn) {
-              let squareCellExpectedArray = getExpectedArray(squareLine, squareColumn)
+            if (isCellEmpty(board[squareLine][squareColumn]) && squareColumn !== cellColumn) {
+              let squareCellExpectedArray = board[squareLine][squareColumn]
               let checkResult = checkThreeExpectedArraysForTriplet(cellExpectedArray, columnCellExpectedArray, squareCellExpectedArray)
               if (checkResult) {
                 let removalValue
@@ -687,8 +724,8 @@ function solveSudoku(board) {
                   }
                 }
                 for (let index = startLine; index < startLine + 3; index++) {
-                  if (board[index][cellColumn] === '.' && index !== cellLine) {
-                    removeExpectedValueInCell(index, cellColumn, removalValue)
+                  if (isCellEmpty(board[index][cellColumn]) && index !== cellLine) {
+                    removeExpectedValueOfCellAndSetValueIfNeeded(index, cellColumn, removalValue)
                   }
                 }
               }
@@ -699,16 +736,16 @@ function solveSudoku(board) {
     }
   }
   function checkForXYWingInLine(cellLine, cellColumn) {
-    let cellExpectedArray = getExpectedArray(cellLine, cellColumn)
+    let cellExpectedArray = board[cellLine][cellColumn]
     let startLine = cellLine - cellLine % 3
     let startColumn = cellColumn - cellColumn % 3
     for (let column = 0; column < 9; column++) {
-      if (board[cellLine][column] === '.' && (column < startColumn || column >= startColumn + 3)) {
-        let lineCellExpectedArray = getExpectedArray(cellLine, column)
+      if (isCellEmpty(board[cellLine][column]) && (column < startColumn || column >= startColumn + 3)) {
+        let lineCellExpectedArray = board[cellLine][column]
         for (let squareLine = startLine; squareLine < startLine + 3; squareLine++) {
           for (let squareColumn = startColumn; squareColumn < startColumn + 3; squareColumn++) {
-            if (board[squareLine][squareColumn] === '.' && squareLine !== cellLine) {
-              let squareCellExpectedArray = getExpectedArray(squareLine, squareColumn)
+            if (isCellEmpty(board[squareLine][squareColumn]) && squareLine !== cellLine) {
+              let squareCellExpectedArray = board[squareLine][squareColumn]
               if (squareCellExpectedArray.toString() === cellExpectedArray.toString() || lineCellExpectedArray.toString() === cellExpectedArray.toString() || squareCellExpectedArray.toString() === lineCellExpectedArray.toString()) continue
               let checkResult = checkThreeExpectedArraysForTriplet(cellExpectedArray, lineCellExpectedArray, squareCellExpectedArray)
               if (checkResult) {
@@ -721,19 +758,19 @@ function solveSudoku(board) {
                 }
                 let lineStartColumn = column - column % 3
                 for (let index = startColumn; index < startColumn + 3; index++) {
-                  if (board[cellLine][index] === '.' && index !== cellColumn) {
-                    removeExpectedValueInCell(cellLine, index, removalValue)
+                  if (isCellEmpty(board[cellLine][index]) && index !== cellColumn) {
+                    removeExpectedValueOfCellAndSetValueIfNeeded(cellLine, index, removalValue)
                   }
-                  if (board[squareLine][index] === '.' && index !== squareColumn) {
-                    removeExpectedValueInCell(squareLine, index, removalValue)
+                  if (isCellEmpty(board[squareLine][index]) && index !== squareColumn) {
+                    removeExpectedValueOfCellAndSetValueIfNeeded(squareLine, index, removalValue)
                   }
                 }
                 for (let index = lineStartColumn; index < lineStartColumn + 3; index++) {
-                  if (board[cellLine][index] === '.' && index !== column) {
-                    removeExpectedValueInCell(cellLine, index, removalValue)
+                  if (isCellEmpty(board[cellLine][index]) && index !== column) {
+                    removeExpectedValueOfCellAndSetValueIfNeeded(cellLine, index, removalValue)
                   }
-                  if (board[squareLine][index] === '.') {
-                    removeExpectedValueInCell(squareLine, index, removalValue)
+                  if (isCellEmpty(board[squareLine][index])) {
+                    removeExpectedValueOfCellAndSetValueIfNeeded(squareLine, index, removalValue)
                   }
                 }
               }
@@ -744,16 +781,16 @@ function solveSudoku(board) {
     }
   }
   function checkForXYWingInColumn(cellLine, cellColumn) {
-    let cellExpectedArray = getExpectedArray(cellLine, cellColumn)
+    let cellExpectedArray = board[cellLine][cellColumn]
     let startLine = cellLine - cellLine % 3
     let startColumn = cellColumn - cellColumn % 3
     for (let line = 0; line < 9; line++) {
-      if (board[line][cellColumn] === '.' && (line < startLine || line >= startLine + 3)) {
-        let columnCellExpectedArray = getExpectedArray(line, cellColumn)
+      if (isCellEmpty(board[line][cellColumn]) && (line < startLine || line >= startLine + 3)) {
+        let columnCellExpectedArray = board[line][cellColumn]
         for (let squareLine = startLine; squareLine < startLine + 3; squareLine++) {
           for (let squareColumn = startColumn; squareColumn < startColumn + 3; squareColumn++) {
-            if (board[squareLine][squareColumn] === '.' && squareColumn !== cellColumn) {
-              let squareCellExpectedArray = getExpectedArray(squareLine, squareColumn)
+            if (isCellEmpty(board[squareLine][squareColumn]) && squareColumn !== cellColumn) {
+              let squareCellExpectedArray = board[squareLine][squareColumn]
               if (squareCellExpectedArray.toString() === cellExpectedArray.toString() || columnCellExpectedArray.toString() === cellExpectedArray.toString() || squareCellExpectedArray.toString() === columnCellExpectedArray.toString()) continue
               let checkResult = checkThreeExpectedArraysForTriplet(cellExpectedArray, columnCellExpectedArray, squareCellExpectedArray)
               if (checkResult) {
@@ -766,19 +803,19 @@ function solveSudoku(board) {
                 }
                 let columnCellStartLine = line - line % 3
                 for (let index = startLine; index < startLine + 3; index++) {
-                  if (board[index][cellColumn] === '.' && index !== cellLine) {
-                    removeExpectedValueInCell(index, cellColumn, removalValue)
+                  if (isCellEmpty(board[index][cellColumn]) && index !== cellLine) {
+                    removeExpectedValueOfCellAndSetValueIfNeeded(index, cellColumn, removalValue)
                   }
-                  if (board[index][squareColumn] === '.' && index !== squareLine) {
-                    removeExpectedValueInCell(index, squareColumn, removalValue)
+                  if (isCellEmpty(board[index][squareColumn]) && index !== squareLine) {
+                    removeExpectedValueOfCellAndSetValueIfNeeded(index, squareColumn, removalValue)
                   }
                 }
                 for (let index = columnCellStartLine; index < columnCellStartLine + 3; index++) {
-                  if (board[index][cellColumn] === '.' && index !== line) {
-                    removeExpectedValueInCell(index, cellColumn, removalValue)
+                  if (isCellEmpty(board[index][cellColumn]) && index !== line) {
+                    removeExpectedValueOfCellAndSetValueIfNeeded(index, cellColumn, removalValue)
                   }
-                  if (board[index][squareColumn] === '.') {
-                    removeExpectedValueInCell(index, squareColumn, removalValue)
+                  if (isCellEmpty(board[index][squareColumn])) {
+                    removeExpectedValueOfCellAndSetValueIfNeeded(index, squareColumn, removalValue)
                   }
                 }
               }
@@ -789,20 +826,24 @@ function solveSudoku(board) {
     }
   }
 
-  initializeMap()
-  removeAlreadyExistsFromExpected()
+  setExpectedValuesInCells()
+  removeAlreadySetValuesFromExpected()
 
-  let start = Date.now()
-  while (expectedMap.size !== 0) {
-    checkForLonelyCellWithExpectedValue()
+  const start = Date.now()
+
+  while (!isSudokuSolved()) {
+
+    setLonelyCellsWithExpectedValueInLinesAndColumnsAndSquares()
     checkAllSquaresForExpectedLinesAndColumns()
     checkForPairedCells()
     checkForNakedPairs()
     checkForNakedTriplets()
     checkForSwordFish()
     checkForXYZWing()
-    let workingTime = Date.now() - start
-    if (workingTime > 1500) return false
+
+    const workingTime = Date.now() - start
+    if (workingTime > 1500) return null
+
   }
 
   return board

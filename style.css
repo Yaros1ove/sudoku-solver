@@ -12,7 +12,7 @@ body {
   align-items: center;
 }
 
-.button-wrapper {
+.solveButton-wrapper {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -23,20 +23,21 @@ body {
   outline: 4px solid black;
   display: flex;
   flex-wrap: wrap;
-  min-width: 540px;
-  max-width: 540px;
-  height: 540px;
+  width: 545px;
+  height: 545px;
 }
 
-.square {
-  outline: 2px solid black;
+.row {
   display: flex;
-  flex-wrap: wrap;
-  width: 180px;
-  height: 180px;
+}
+.row[data-index="2"], .row[data-index="5"] {
+  border-bottom: 3px solid black;
 }
 
 .cell {
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
   outline: 1px solid black;
   display: flex;
   justify-content: center;
@@ -44,13 +45,19 @@ body {
   width: 60px;
   height: 60px;
 }
+.cell[data-column="2"], .cell[data-column="5"] {
+  border-right: 3px solid black;
+}
 .cell:hover {
   cursor: pointer;
 }
 
-.numbers {
+.numberButtons {
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
   width: 60px;
-  height: 540px;
+  height: 550px;
   outline: 1.5px solid black;
   position: relative;
   left: 60px;
@@ -58,7 +65,7 @@ body {
   flex-direction: column;
 }
 
-.number {
+.numberButton {
   outline: 1px solid black;
   height: 60px;
   width: 60px;
@@ -66,11 +73,11 @@ body {
   justify-content: center;
   align-items: center;
 }
-.number:hover {
+.numberButton:hover {
   cursor: pointer;
 }
 
-.button {
+.solveButton {
   font-size: 30px;
   font-family: sans-serif;
   height: 60px;
@@ -83,10 +90,10 @@ body {
   background-color: lightGrey;
 }
 
-.validate-error {
-  background-color: rgba(255, 0, 0, 0.3) !important;
-}
-
 .chosen-number {
   background-color: rgba(255, 255, 0, 0.3);
+}
+
+.validate-error {
+  background-color: rgba(255, 0, 0, 0.3);
 }

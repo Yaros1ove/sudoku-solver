@@ -1,67 +1,70 @@
 @import 'reset.css'
 body
-    font-size: 30px
-    font-family: sans-serif
+  font-size: 30px
+  font-family: sans-serif
 .content
-    height: 90vh
-    width: 100vw
-    display: flex
-    justify-content: center
-    align-items: center
-.button-wrapper
-    display: flex
-    justify-content: center
-    align-items: center
-    height: 10vh
+  height: 90vh
+  width: 100vw
+  display: flex
+  justify-content: center
+  align-items: center
+.solveButton-wrapper
+  display: flex
+  justify-content: center
+  align-items: center
+  height: 10vh
 .board
-    outline: 4px solid black
-    display: flex
-    flex-wrap: wrap
-    min-width: 540px
-    max-width: 540px
-    height: 540px
-.square
-    outline: 2px solid black
-    display: flex
-    flex-wrap: wrap
-    width: 180px
-    height: 180px
+  outline: 4px solid black
+  display: flex
+  flex-wrap: wrap
+  width: 545px
+  height: 545px
+.row
+  display: flex
+  &[data-index = '2'],
+  &[data-index = '5']
+    border-bottom: 3px solid black
 .cell
-    outline: 1px solid black
-    display: flex
-    justify-content: center
-    align-items: center
-    width: 60px
-    height: 60px
-    &:hover
-        cursor: pointer
-.numbers
-    width: 60px
-    height: 540px
-    outline: 1.5px solid black
-    position: relative
-    left: 60px
-    display: flex
-    flex-direction: column
-.number
-    outline: 1px solid black 
-    height: 60px
-    width: 60px
-    display: flex
-    justify-content: center
-    align-items: center
-    &:hover
-        cursor: pointer
-.button
-    font-size: 30px
-    font-family: sans-serif
-    height: 60px
-    width: 180px
-    top: 340px
-    right: 420px
+  user-select: none
+  outline: 1px solid black
+  display: flex
+  justify-content: center
+  align-items: center
+  width: 60px
+  height: 60px
+  &[data-column = '2'],
+  &[data-column = '5']
+    border-right: 3px solid black
+  &:hover
+    cursor: pointer
+.numberButtons
+  user-select: none
+  width: 60px
+  height: 550px
+  outline: 1.5px solid black
+  position: relative
+  left: 60px
+  display: flex
+  flex-direction: column
+.numberButton
+  outline: 1px solid black
+  height: 60px
+  width: 60px
+  display: flex
+  justify-content: center
+  align-items: center
+  &:hover
+    cursor: pointer
+.solveButton
+  font-size: 30px
+  font-family: sans-serif
+  height: 60px
+  width: 180px
+  top: 340px
+  right: 420px
 .active
-    background-color: lightGrey
-.validate-error
-    background-color: rgba(255, 0, 0, 0.3) !important
+  background-color: lightGrey
 .chosen-number
-    background-color: rgba(255, 255, 0, 0.3)
+  background-color: rgba(255, 255, 0, 0.3)
+.validate-error
+  background-color: rgba(255, 0, 0, 0.3)

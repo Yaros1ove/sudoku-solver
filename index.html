@@ -1,131 +1,135 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
-    <title>Sudoku solver</title>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="style.css">
+  <title>Sudoku solver</title>
 </head>
+
 <body>
-    <div class="content">
-        <div class="board">
-            <div class="square">
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-            </div>
-            <div class="square">
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-            </div>
-            <div class="square">
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-            </div>
-            <div class="square">
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-            </div>
-            <div class="square">
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-            </div>
-            <div class="square">
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-            </div>
-            <div class="square">
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-            </div>
-            <div class="square">
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-            </div>
-            <div class="square">
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-                <div class="cell"></div>
-            </div>
-        </div>
-        <div class="numbers">
-            <div class="number">1</div>
-            <div class="number">2</div>
-            <div class="number">3</div>
-            <div class="number">4</div>
-            <div class="number">5</div>
-            <div class="number">6</div>
-            <div class="number">7</div>
-            <div class="number">8</div>
-            <div class="number">9</div>
-            <div class="number active">X</div>
-        </div>
+  <div class="content">
+    <div class="board">
+      <div class="row" data-index="0">
+        <div class="cell" data-row="0" data-column="0"></div>
+        <div class="cell" data-row="0" data-column="1"></div>
+        <div class="cell" data-row="0" data-column="2"></div>
+        <div class="cell" data-row="0" data-column="3"></div>
+        <div class="cell" data-row="0" data-column="4"></div>
+        <div class="cell" data-row="0" data-column="5"></div>
+        <div class="cell" data-row="0" data-column="6"></div>
+        <div class="cell" data-row="0" data-column="7"></div>
+        <div class="cell" data-row="0" data-column="8"></div>
+      </div>
+      <div class="row" data-index="1">
+        <div class="cell" data-row="1" data-column="0"></div>
+        <div class="cell" data-row="1" data-column="1"></div>
+        <div class="cell" data-row="1" data-column="2"></div>
+        <div class="cell" data-row="1" data-column="3"></div>
+        <div class="cell" data-row="1" data-column="4"></div>
+        <div class="cell" data-row="1" data-column="5"></div>
+        <div class="cell" data-row="1" data-column="6"></div>
+        <div class="cell" data-row="1" data-column="7"></div>
+        <div class="cell" data-row="1" data-column="8"></div>
+      </div>
+      <div class="row" data-index="2">
+        <div class="cell" data-row="2" data-column="0"></div>
+        <div class="cell" data-row="2" data-column="1"></div>
+        <div class="cell" data-row="2" data-column="2"></div>
+        <div class="cell" data-row="2" data-column="3"></div>
+        <div class="cell" data-row="2" data-column="4"></div>
+        <div class="cell" data-row="2" data-column="5"></div>
+        <div class="cell" data-row="2" data-column="6"></div>
+        <div class="cell" data-row="2" data-column="7"></div>
+        <div class="cell" data-row="2" data-column="8"></div>
+      </div>
+      <div class="row" data-index="3">
+        <div class="cell" data-row="3" data-column="0"></div>
+        <div class="cell" data-row="3" data-column="1"></div>
+        <div class="cell" data-row="3" data-column="2"></div>
+        <div class="cell" data-row="3" data-column="3"></div>
+        <div class="cell" data-row="3" data-column="4"></div>
+        <div class="cell" data-row="3" data-column="5"></div>
+        <div class="cell" data-row="3" data-column="6"></div>
+        <div class="cell" data-row="3" data-column="7"></div>
+        <div class="cell" data-row="3" data-column="8"></div>
+      </div>
+      <div class="row" data-index="4">
+        <div class="cell" data-row="4" data-column="0"></div>
+        <div class="cell" data-row="4" data-column="1"></div>
+        <div class="cell" data-row="4" data-column="2"></div>
+        <div class="cell" data-row="4" data-column="3"></div>
+        <div class="cell" data-row="4" data-column="4"></div>
+        <div class="cell" data-row="4" data-column="5"></div>
+        <div class="cell" data-row="4" data-column="6"></div>
+        <div class="cell" data-row="4" data-column="7"></div>
+        <div class="cell" data-row="4" data-column="8"></div>
+      </div>
+      <div class="row" data-index="5">
+        <div class="cell" data-row="5" data-column="0"></div>
+        <div class="cell" data-row="5" data-column="1"></div>
+        <div class="cell" data-row="5" data-column="2"></div>
+        <div class="cell" data-row="5" data-column="3"></div>
+        <div class="cell" data-row="5" data-column="4"></div>
+        <div class="cell" data-row="5" data-column="5"></div>
+        <div class="cell" data-row="5" data-column="6"></div>
+        <div class="cell" data-row="5" data-column="7"></div>
+        <div class="cell" data-row="5" data-column="8"></div>
+      </div>
+      <div class="row" data-index="6">
+        <div class="cell" data-row="6" data-column="0"></div>
+        <div class="cell" data-row="6" data-column="1"></div>
+        <div class="cell" data-row="6" data-column="2"></div>
+        <div class="cell" data-row="6" data-column="3"></div>
+        <div class="cell" data-row="6" data-column="4"></div>
+        <div class="cell" data-row="6" data-column="5"></div>
+        <div class="cell" data-row="6" data-column="6"></div>
+        <div class="cell" data-row="6" data-column="7"></div>
+        <div class="cell" data-row="6" data-column="8"></div>
+      </div>
+      <div class="row" data-index="7">
+        <div class="cell" data-row="7" data-column="0"></div>
+        <div class="cell" data-row="7" data-column="1"></div>
+        <div class="cell" data-row="7" data-column="2"></div>
+        <div class="cell" data-row="7" data-column="3"></div>
+        <div class="cell" data-row="7" data-column="4"></div>
+        <div class="cell" data-row="7" data-column="5"></div>
+        <div class="cell" data-row="7" data-column="6"></div>
+        <div class="cell" data-row="7" data-column="7"></div>
+        <div class="cell" data-row="7" data-column="8"></div>
+      </div>
+      <div class="row" data-index="8">
+        <div class="cell" data-row="8" data-column="0"></div>
+        <div class="cell" data-row="8" data-column="1"></div>
+        <div class="cell" data-row="8" data-column="2"></div>
+        <div class="cell" data-row="8" data-column="3"></div>
+        <div class="cell" data-row="8" data-column="4"></div>
+        <div class="cell" data-row="8" data-column="5"></div>
+        <div class="cell" data-row="8" data-column="6"></div>
+        <div class="cell" data-row="8" data-column="7"></div>
+        <div class="cell" data-row="8" data-column="8"></div>
+      </div>
     </div>
-    <div class="button-wrapper">
-      <button class="button">Solve</button></div>
-    <script src="sudokuSolver.js"></script>
-    <script src="index.js"></script>
+    <div class="numberButtons">
+      <div data-value="1" class="numberButton">1</div>
+      <div data-value="2" class="numberButton">2</div>
+      <div data-value="3" class="numberButton">3</div>
+      <div data-value="4" class="numberButton">4</div>
+      <div data-value="5" class="numberButton">5</div>
+      <div data-value="6" class="numberButton">6</div>
+      <div data-value="7" class="numberButton">7</div>
+      <div data-value="8" class="numberButton">8</div>
+      <div data-value="9" class="numberButton">9</div>
+      <div data-value="" class="numberButton active">X</div>
+    </div>
+  </div>
+  <div class="solveButton-wrapper">
+    <button class="solveButton">Solve</button>
+  </div>
+  <script src="sudokuSolver.js"></script>
+  <script src="index.js"></script>
 </body>
+
 </html>

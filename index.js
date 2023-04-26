@@ -1,23 +1,338 @@
-//array of available numbers
-const allNumbers = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
-//array of number buttons
-const numbers = document.querySelectorAll('.number')
-//array of squares with cells for easy access
-const board = []
-const squares = document.querySelectorAll('.square')
-//filling board array
-for (let square of squares) {
-  let cells = square.querySelectorAll('.cell')
-  board.push(cells)
+function getBoardCells() {
+  const board = []
+  const rows = document.querySelectorAll('.row')
+
+  for (const row of rows) {
+    board.push(Array.from(row.children))
+  }
+
+  return board
 }
-//solve button
-const button = document.querySelector('.button')
-button.addEventListener('click', solve)
 
-//current shosen number
-let curNumber = ''
+function addListenerToBoardDOM() {
+  const boardDOM = document.querySelector('.board')
+  boardDOM.addEventListener('click', insertOrDeleteCurrentNumberInCell)
+}
 
-let test1 = [
+
+function getNumberButtons() {
+  return document.querySelector('.numberButtons')
+}
+
+function getNumberButtonsWithListener() {
+  const numberButtons = getNumberButtons()
+  numberButtons.addEventListener('click', changeCurrentNumber)
+}
+
+
+function getSolveButtonWithListener() {
+  const solveButton = document.querySelector('.solveButton')
+  solveButton.addEventListener('click', solve)
+  return solveButton
+}
+
+
+function isNumberButton(element) {
+  return element.classList.contains('numberButton')
+}
+
+function isCell(element) {
+  return element.classList.contains('cell')
+}
+
+
+function changeCurrentNumber(event) {
+  const numberButton = event.target
+  if (!isNumberButton(numberButton)) return
+
+  setActiveClassToNumberButton(numberButton)
+
+  const newValue = numberButton.dataset.value
+  setCurrentNumber(newValue)
+
+  colorCellsWithCurrentNumber()
+}
+
+
+function setActiveClassToNumberButton(newNumberButton) {
+  const oldNumberButton = document.querySelector('.active')
+  if (oldNumberButton === newNumberButton) return
+
+  oldNumberButton.classList.remove('active')
+  newNumberButton.classList.add('active')
+}
+
+function setCurrentNumber(newValue) {
+  currentNumber = newValue
+}
+
+function getCurrentNumber() {
+  return currentNumber
+}
+
+
+function colorCellsWithCurrentNumber() {
+  const currentNumber = getCurrentNumber()
+
+  for (const row of boardCells) {
+    for (const cell of row) {
+
+      if (cell.innerHTML === currentNumber) {
+        colorCellWithCurrentNumber(cell)
+      } else {
+        removeChosenColorFromCell(cell)
+      }
+
+    }
+  }
+}
+
+function colorCellWithCurrentNumber(cell) {
+  const currentNumber = getCurrentNumber()
+
+  if (currentNumber) cell.classList.add('chosen-number')
+}
+
+function removeChosenColorFromCell(cell) {
+  cell.classList.remove('chosen-number')
+}
+
+function colorCellWithError(cell) {
+  cell.classList.add('validate-error')
+  isBoardValid = false
+}
+
+function removeErrorColorFromCell(cell) {
+  cell.classList.remove('validate-error')
+}
+
+
+function insertOrDeleteCurrentNumberInCell(event) {
+  const cell = event.target
+  if (!isCell(cell)) return
+  const currentNumber = getCurrentNumber()
+
+  if (cell.innerHTML === currentNumber) {
+    cell.innerHTML = ''
+    removeChosenColorFromCell(cell)
+  } else {
+    cell.innerHTML = currentNumber
+    colorCellWithCurrentNumber(cell)
+  }
+
+  validateBoard()
+}
+
+
+function disableSolveButton() {
+  solveButton.disabled = 'disabled'
+}
+
+function enableSolveButton() {
+  solveButton.disabled = ''
+}
+
+
+function validateBoard() {
+  clearAllErrors()
+
+  validateLines()
+  validateColumns()
+  validateSquares()
+
+  if (isBoardValid && !isBoardEmpty()) {
+    enableSolveButton()
+  } else {
+    disableSolveButton()
+  }
+}
+
+function clearAllErrors() {
+  for (const line of boardCells) {
+    for (const cell of line) {
+
+      removeErrorColorFromCell(cell)
+
+    }
+  }
+
+  isBoardValid = true
+}
+
+function validateLines() {
+  for (const line of boardCells) {
+    validateCells(line)
+  }
+}
+
+function createInsertedValuesWithIndexesMapFromCells(cells) {
+  const insertedValuesWithIndexes = new Map()
+
+  cells.forEach((cell, index) => {
+    const value = cell.innerHTML
+    if (value) {
+
+      if (!insertedValuesWithIndexes.has(value)) {
+        insertedValuesWithIndexes.set(value, [])
+      }
+
+      const indexes = insertedValuesWithIndexes.get(value)
+      indexes.push(index)
+      insertedValuesWithIndexes.set(value, indexes)
+
+    }
+  })
+
+  return insertedValuesWithIndexes
+}
+
+function getValidateErrorIndexesFromMap(map) {
+  const errorIndexes = []
+
+  for (const indexes of map.values()) {
+    if (indexes.length > 1) {
+      for (const index of indexes) {
+        errorIndexes.push(index)
+      }
+
+    }
+  }
+
+  return errorIndexes
+}
+
+function colorCellWithErrorFromCells(cells) {
+  for (const cell of cells) {
+    colorCellWithError(cell)
+  }
+}
+
+function getErrorCellsFromIndexesAndCells(indexes, cells) {
+  const errorCells = []
+
+  for (const index of indexes) {
+    errorCells.push(cells[index])
+  }
+
+  return errorCells
+}
+
+function validateCells(cells) {
+  if (!cells.find(cell => cell.innerHTML)) return
+
+  const insertedValuesWithIndexes = createInsertedValuesWithIndexesMapFromCells(cells)
+  const errorIndexes = getValidateErrorIndexesFromMap(insertedValuesWithIndexes)
+  const errorCells = getErrorCellsFromIndexesAndCells(errorIndexes, cells)
+
+  colorCellWithErrorFromCells(errorCells)
+}
+
+function validateColumns() {
+  const columns = createColumnsFromLines(boardCells)
+
+  for (const column of columns) {
+    validateCells(column)
+  }
+
+}
+
+function initializeArrayWithNineEmptyArrays() {
+  const array = []
+
+  for (let index = 0; index < 9; index++) {
+    array.push([])
+  }
+
+  return array
+}
+
+function createColumnsFromLines(lines) {
+  const columns = initializeArrayWithNineEmptyArrays()
+
+  for (const line of lines) {
+    line.forEach((cell, index) => {
+
+      columns[index].push(cell)
+
+    })
+  }
+
+  return columns
+}
+
+function validateSquares() {
+  const squares = createSquaresFromLines(boardCells)
+
+  for (const square of squares) {
+    validateCells(square)
+  }
+}
+
+function getSquareIndexFromLineAndColumnIndexes(lineIndex, columnIndex) {
+  return 3 * Math.floor(lineIndex / 3) + Math.floor(columnIndex / 3)
+}
+
+function createSquaresFromLines(lines) {
+  const squares = initializeArrayWithNineEmptyArrays()
+
+  lines.forEach((line, lineIndex) => {
+    line.forEach((cell, columnIndex) => {
+
+      squares[getSquareIndexFromLineAndColumnIndexes(lineIndex, columnIndex)].push(cell)
+
+    })
+  })
+
+  return squares
+}
+
+function fillBoardWithNumbersFromArray(array) {
+  array.forEach((line, lineIndex) => {
+    line.forEach((value, columnIndex) => {
+
+      if (value !== '.') {
+        boardCells[lineIndex][columnIndex].innerHTML = value
+      }
+
+    })
+  })
+
+  colorCellsWithCurrentNumber()
+}
+
+function getBoardReadyForSolvingFromCells(cells) {
+  const boardReadyForSolving = []
+
+  for (const line of cells) {
+    boardReadyForSolving.push(line.map(cell => cell.innerHTML || '.'))
+  }
+
+  return boardReadyForSolving
+}
+
+function isBoardEmpty() {
+  for (const line of boardCells) {
+    if (!isLineEmpty(line)) return false
+  }
+
+  return true
+}
+function isLineEmpty(line) {
+  if (line.find(cell => cell.innerHTML)) return false
+
+  return true
+}
+
+
+let currentNumber = ''
+
+
+const numberButtons = getNumberButtonsWithListener()
+addListenerToBoardDOM()
+const boardCells = getBoardCells()
+const solveButton = getSolveButtonWithListener()
+
+const test1 = [
   ["5", "3", ".", ".", "7", ".", ".", ".", "."],
   ["6", ".", ".", "1", "9", "5", ".", ".", "."],
   [".", "9", "8", ".", ".", ".", ".", "6", "."],
@@ -28,192 +343,23 @@ let test1 = [
   [".", ".", ".", "4", "1", "9", ".", ".", "5"],
   [".", ".", ".", ".", "8", ".", ".", "7", "9"]
 ]
-// fillBoard(test1)
+fillBoardWithNumbersFromArray(test1)
 
-//array of binded functions for numbers
-const bindedChooseNumber = []
-for (let i = 0; i < 10; i++) {
-  bindedChooseNumber.push(chooseNumber.bind(null, i))
-}
-for (let i = 0; i < 10; i++) {
-  numbers[i].addEventListener('click', bindedChooseNumber[i])
-}
-//setting curNumber
-function chooseNumber(index) {
-  for (let number of numbers) {
-    number.classList.remove('active')
-  }
-  curNumber = numbers[index].textContent
-  numbers[index].classList.add('active')
-  curNumber = curNumber === 'X' ? '' : curNumber
-  colorChosen()
-}
-function colorChosen() {
-  for (let square of board) {
-    for (let cell of square) {
-      cell.classList.remove('chosen-number')
-      if (cell.textContent === curNumber && cell.textContent !== '') {
-        cell.classList.add('chosen-number')
-      }
-    }
-  }
+
+let isBoardValid = !isBoardEmpty()
+if (!isBoardValid) {
+  disableSolveButton()
 }
 
-//array of binded functions for cells
-const bindedInsertNumber = []
-for (let square = 0; square < 9; square++) {
-  let tmpArray = []
-  for (let cell = 0; cell < 9; cell++) {
-    tmpArray.push(insertNumber.bind(null, square, cell))
-  }
-  bindedInsertNumber.push(tmpArray)
-}
-for (let square = 0; square < 9; square++) {
-  for (let cell = 0; cell < 9; cell++) {
-    board[square][cell].addEventListener('click', bindedInsertNumber[square][cell])
-  }
-}
-//inserting curNumber into cell
-function insertNumber(square, cell) {
-  if (board[square][cell].textContent === curNumber || curNumber === '') {
-    prevNumber = board[square][cell].textContent
-    board[square][cell].textContent = ''
-    board[square][cell].classList.remove('validate-error')
-  } else {
-    board[square][cell].textContent = curNumber
-  }
-  validate()
-  colorChosen()
-}
 
-//paint cells in red in case of more then one cell has the same number (in line, column and square)
-function validate() {
-  //
-  let isNeededToEnableButton = true
-  //clear all cells from red
-  for (let square of board) {
-    for (let cell of square) {
-      cell.classList.remove('validate-error')
-    }
-  }
-  //validation of square
-  for (let square of board) {
-    isNeededToEnableButton = !validateArray(square) ? false : isNeededToEnableButton
-  }
-  //validation of lines
-  for (let squareLine = 0; squareLine < 9; squareLine += 3) {
-    let line1 = []
-    let line2 = []
-    let line3 = []
-    for (let square = squareLine; square < squareLine + 3; square++) {
-      for (let cell = 0; cell < 9; cell++) {
-        if (cell < 3) line1.push(board[square][cell])
-        if (cell >= 3 && cell < 6) line2.push(board[square][cell])
-        if (cell >= 6) line3.push(board[square][cell])
-      }
-    }
-    isNeededToEnableButton = !validateArray(line1) ? false : isNeededToEnableButton
-    isNeededToEnableButton = !validateArray(line2) ? false : isNeededToEnableButton
-    isNeededToEnableButton = !validateArray(line3) ? false : isNeededToEnableButton
-  }
-  //validation of columns
-  for (let squareColumn = 0; squareColumn < 3; squareColumn++) {
-    let column1 = []
-    let column2 = []
-    let column3 = []
-    for (let square = squareColumn; square < 9; square += 3) {
-      for (let cell = 0; cell < 9; cell++) {
-        if (cell % 3 === 0) column1.push(board[square][cell])
-        if (cell % 3 === 1) column2.push(board[square][cell])
-        if (cell % 3 === 2) column3.push(board[square][cell])
-      }
-    }
-    isNeededToEnableButton = !validateArray(column1) ? false : isNeededToEnableButton
-    isNeededToEnableButton = !validateArray(column2) ? false : isNeededToEnableButton
-    isNeededToEnableButton = !validateArray(column3) ? false : isNeededToEnableButton
-  }
-  //activation of button
-  if (isNeededToEnableButton) {
-    button.disabled = ''
-  }
-}
-function validateArray(array) {
-  for (let number of allNumbers) {
-    let counter = 0
-    for (let cell of array) {
-      if (cell.textContent === number) counter++
-    }
-    if (counter > 1) {
-      button.disabled = 'disabled'
-      for (let cell of array) {
-        if (cell.textContent === number) {
-          cell.classList.add('validate-error')
-        }
-      }
-      return false
-    }
-  }
-  return true
-}
 
-//solving the sudoku
+
 function solve() {
-  let sudokuArray = createSudokuArray()
-  let solved = solveSudoku(sudokuArray)
+  const boardReadyForSolving = getBoardReadyForSolvingFromCells(boardCells)
+  const solved = solveSudoku(boardReadyForSolving)
   if (solved) {
-    fillBoard(solved)
+    fillBoardWithNumbersFromArray(solved)
   } else {
     alert("Can't solve that sudoku")
   }
-}
-
-//creating the sudoky array
-function createSudokuArray() {
-  let sudokuArray = []
-  for (let squareLine = 0; squareLine < 9; squareLine += 3) {
-    let line1 = []
-    let line2 = []
-    let line3 = []
-    for (let square = squareLine; square < squareLine + 3; square++) {
-      for (let cell = 0; cell < 9; cell++) {
-        let value = board[square][cell].textContent
-        value = value === '' ? '.' : value
-        if (cell < 3) line1.push(value)
-        if (cell >= 3 && cell < 6) line2.push(value)
-        if (cell >= 6) line3.push(value)
-      }
-    }
-    sudokuArray.push(line1)
-    sudokuArray.push(line2)
-    sudokuArray.push(line3)
-  }
-  return sudokuArray
-}
-
-//filling the board with values from array
-function fillBoard(array) {
-  let rearrangedArray = []
-  for (let squareLine = 0; squareLine < 9; squareLine += 3) {
-    let square1 = []
-    let square2 = []
-    let square3 = []
-    for (let arrayLine = squareLine; arrayLine < squareLine + 3; arrayLine++) {
-      for (let cell = 0; cell < 9; cell++) {
-        let value = array[arrayLine][cell]
-        value = value === '.' ? '' : value
-        if (Math.floor(cell / 3) === 0) square1.push(value)
-        if (Math.floor(cell / 3) === 1) square2.push(value)
-        if (Math.floor(cell / 3) === 2) square3.push(value)
-      }
-    }
-    rearrangedArray.push(square1)
-    rearrangedArray.push(square2)
-    rearrangedArray.push(square3)
-  }
-  for (let square = 0; square < 9; square++) {
-    for (let cell = 0; cell < 9; cell++) {
-      board[square][cell].textContent = rearrangedArray[square][cell]
-    }
-  }
-  colorChosen()
 }

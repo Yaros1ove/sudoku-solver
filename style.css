@@ -1,56 +1,64 @@
-@import 'reset.css';
+@import './reset.css';
 body {
   font-size: 30px;
   font-family: sans-serif;
 }
 
 .content {
-  height: 90vh;
-  width: 100vw;
+  min-height: 90vh;
+  min-width: 95vw;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
-.button-wrapper {
+.solveButton-wrapper {
+  height: 3vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 10vh;
 }
 
 .board {
+  width: 544px;
+  height: 544px;
   outline: 4px solid black;
   display: flex;
   flex-wrap: wrap;
-  min-width: 540px;
-  max-width: 540px;
-  height: 540px;
 }
 
-.square {
-  outline: 2px solid black;
+.row {
   display: flex;
-  flex-wrap: wrap;
-  width: 180px;
-  height: 180px;
+}
+.row[data-index="2"], .row[data-index="5"] {
+  border-bottom: 3px solid black;
 }
 
 .cell {
+  width: 60px;
+  height: 60px;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
   outline: 1px solid black;
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 60px;
-  height: 60px;
+}
+.cell[data-column="2"], .cell[data-column="5"] {
+  border-right: 3px solid black;
 }
 .cell:hover {
   cursor: pointer;
+  background-color: rgba(215, 215, 215, 0.3);
 }
 
-.numbers {
+.numberButtons {
   width: 60px;
-  height: 540px;
+  height: 544px;
+  -webkit-user-select: none;
+     -moz-user-select: none;
+          user-select: none;
   outline: 1.5px solid black;
   position: relative;
   left: 60px;
@@ -58,35 +66,51 @@ body {
   flex-direction: column;
 }
 
-.number {
-  outline: 1px solid black;
-  height: 60px;
+.numberButton {
   width: 60px;
+  height: 60px;
+  outline: 1px solid black;
   display: flex;
   justify-content: center;
   align-items: center;
 }
-.number:hover {
+.numberButton:hover {
   cursor: pointer;
+  background-color: rgba(215, 215, 215, 0.3);
 }
 
-.button {
+.solveButton {
   font-size: 30px;
-  font-family: sans-serif;
   height: 60px;
   width: 180px;
   top: 340px;
   right: 420px;
 }
 
-.active {
-  background-color: lightGrey;
+.not-valid {
+  background-color: rgba(100, 100, 0, 0.3);
+}
+.not-valid:hover {
+  background-color: rgba(255, 0, 0, 0.3);
 }
 
-.validate-error {
-  background-color: rgba(255, 0, 0, 0.3) !important;
+.active {
+  background-color: rgba(90, 90, 90, 0.3);
+}
+.active:hover {
+  background-color: rgba(90, 90, 90, 0.3);
 }
 
 .chosen-number {
   background-color: rgba(255, 255, 0, 0.3);
+}
+.chosen-number:hover {
+  background-color: rgba(255, 255, 0, 0.3);
+}
+
+.validate-error {
+  background-color: rgba(255, 0, 0, 0.3);
+}
+.validate-error:hover {
+  background-color: rgba(255, 0, 0, 0.3);
 }

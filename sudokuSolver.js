@@ -1,45 +1,46 @@
 function solveSudoku(board) {
-  //array of all expected values for fill
+
   let allExpectedValues = ['1', '2', '3', '4', '5', '6', '7', '8', '9']
-  //[line, column] : [expected values] of every single empty cell
   let expectedMap = new Map()
-  //initialization of expectedMap
+
   function initializeMap() {
     for (let line = 0; line < 9; line++) {
       for (let column = 0; column < 9; column++) {
+
         if (board[line][column] === '.') {
-          let key = getKey(line, column)
+          const key = getKey(line, column)
           expectedMap.set(key, [...allExpectedValues])
         }
+
       }
     }
   }
-  //set value in case of only 1 expected
-  function checkForLonelyExpectedValue(line, column) {
-    let expectedArray = getExpectedArray(line, column)
+
+  function checkForLonelyExpectedValueAndSet(line, column) {
+    const expectedArray = getExpectedArray(line, column)
     if (expectedArray.length === 1) {
-      let value = expectedArray[0]
+      const value = expectedArray[0]
       setValue(line, column, value)
     }
   }
-  //get expectedMap key from line and column
+
   function getKey(line, column) {
     return line.toString() + column.toString()
   }
-  //get all expected values of cell
+
   function getExpectedArray(line, column) {
-    let key = getKey(line, column)
+    const key = getKey(line, column)
     return expectedMap.get(key)
   }
-  //remove value from expectedArray for cell
+
   function removeExpectedValueInCell(line, column, value) {
     if (!isInExpected(line, column, value)) return
     let expectedArray = getExpectedArray(line, column)
     let index = expectedArray.indexOf(value)
     expectedArray.splice(index, 1)
-    checkForLonelyExpectedValue(line, column)
+    checkForLonelyExpectedValueAndSet(line, column)
   }
-  //set value for cell and delete expected values from map
+  
   function setValue(line, column, value) {
     board[line][column] = value
     let key = getKey(line, column)
@@ -48,7 +49,6 @@ function solveSudoku(board) {
     removeExpectedInColumn(column, [value])
     removeExpectedInSquare(line, column, [value])
   }
-  //remove all set values from expected in line, column and square
   function removeAlreadyExistsFromExpected() {
     for (let line = 0; line < 9; line++) {
       for (let column = 0; column < 9; column++) {
@@ -61,9 +61,6 @@ function solveSudoku(board) {
       }
     }
   }
-  //remove set value from expected in line
-  //values - array of set values
-  //indexesNotToTouch - array of indexes of cells we can't change
   function removeExpectedInLine(line, values, indexesNotToTouch = []) {
     for (let column = 0; column < 9; column++) {
       if (board[line][column] === '.' && !indexesNotToTouch.includes(column)) {
@@ -73,7 +70,6 @@ function solveSudoku(board) {
       }
     }
   }
-  //remove set value from expected in column
   function removeExpectedInColumn(column, values, indexesNotToTouch = []) {
     for (let line = 0; line < 9; line++) {
       if (board[line][column] === '.' && !indexesNotToTouch.includes(line)) {
@@ -84,7 +80,6 @@ function solveSudoku(board) {
 
     }
   }
-  //remove set value from expected in square
   function removeExpectedInSquare(cellLine, cellColumn, values, keysNotToTouch = []) {
     let startLine = cellLine - cellLine % 3
     let startColumn = cellColumn - cellColumn % 3
@@ -99,13 +94,11 @@ function solveSudoku(board) {
       }
     }
   }
-  //check for value presence in expected of the cell
   function isInExpected(line, column, value) {
     if (board[line][column] !== '.') return false
     let expectedArray = getExpectedArray(line, column)
     return expectedArray.includes(value)
   }
-  //check for only one place where we can set a value in line, column and square
   function checkForLonelyCellWithExpectedValue() {
     for (let line = 0; line < 9; line++) {
       for (let column = 0; column < 9; column++) {
@@ -116,7 +109,6 @@ function solveSudoku(board) {
       }
     }
   }
-  //check for only one place where we can set a value in line and column
   function checkForLonelyCellLinear(line, column) {
     let expectedArray = getExpectedArray(line, column)
     let linearCounter = 0
@@ -142,12 +134,9 @@ function solveSudoku(board) {
       }
     }
   }
-  //check for only one place where we can set a value in square
   function checkForLonelyCellSquare(cellLine, cellColumn) {
     if (board[cellLine][cellColumn] !== '.') return
-    //top line of the square
     let startLine = cellLine - cellLine % 3
-    //left column of the square
     let startColumn = cellColumn - cellColumn % 3
     let expectedArray = getExpectedArray(cellLine, cellColumn)
     for (let expectedValue of expectedArray) {
@@ -167,7 +156,6 @@ function solveSudoku(board) {
       }
     }
   }
-  //check all squares for if we can only set a value in line or column in square; then we know that this line or column can't exist same value in other squares
   function checkAllSquaresForExpectedLinesAndColumns() {
     for (let line = 0; line < 9; line += 3) {
       for (let column = 0; column < 9; column += 3) {
@@ -175,7 +163,6 @@ function solveSudoku(board) {
       }
     }
   }
-  //check current square for expected line or column
   function checkSquareForExpectedLinesAndColumns(startLine, startColumn) {
     for (let line = startLine; line < startLine + 3; line++) {
       for (let column = startColumn; column < startColumn + 3; column++) {
@@ -197,7 +184,6 @@ function solveSudoku(board) {
       }
     }
   }
-  //check for presence of line of expected value
   function checkSquareForExpectedLines(startLine, startColumn, value) {
     let presenceCounter = 0
     for (let line = startLine; line < startLine + 3; line++) {
@@ -214,7 +200,6 @@ function solveSudoku(board) {
     if (presenceCounter === 1) return true
     return false
   }
-  //check for presence of column of expected value
   function checkSquareForExpectedColumns(startLine, startColumn, value) {
     let presenceCounter = 0
     for (let column = startColumn; column < startColumn + 3; column++) {
@@ -231,7 +216,6 @@ function solveSudoku(board) {
     if (presenceCounter === 1) return true
     return false
   }
-  //check for presence of two cells with two equial expected values
   function checkForPairedCells() {
     for (let line = 0; line < 9; line++) {
       for (let column = 0; column < 9; column++) {
@@ -250,7 +234,7 @@ function solveSudoku(board) {
               let indexesNotToTouch = [line, pairLineIndex]
               removeExpectedInColumn(column, expectedArray, indexesNotToTouch)
             }
-            //check for pair i nsquare
+            //check for pair in square
             let pairKey = checkForPairInSquare(line, column, expectedArray)
             if (pairKey !== -1) {
               let key = getKey(line, column)
@@ -262,7 +246,6 @@ function solveSudoku(board) {
       }
     }
   }
-  //check for presence of pair in line
   function checkForPairInLine(line, columnIndex, expectedArray) {
     for (let column = 0; column < 9; column++) {
       if (column !== columnIndex && board[line][column] === '.') {
@@ -272,7 +255,6 @@ function solveSudoku(board) {
     }
     return -1
   }
-  //check for presence of pair in column
   function checkForPairInColumn(lineIndex, column, expectedArray) {
     for (let line = 0; line < 9; line++) {
       if (line !== lineIndex && board[line][column] === '.') {
@@ -282,7 +264,6 @@ function solveSudoku(board) {
     }
     return -1
   }
-  //check for presence of pair in square
   function checkForPairInSquare(cellLine, cellColumn, expectedArray) {
     let startLine = cellLine - cellLine % 3
     let startColumn = cellColumn - cellColumn % 3
@@ -296,7 +277,6 @@ function solveSudoku(board) {
     }
     return -1
   }
-  //naked pair is a pair that has more then two expected in ncommon, but there are no more places for two expected values to be set
   function checkForNakedPairs() {
     for (let index = 0; index < 9; index++) {
       checkForNakedPairInLine(index)
@@ -432,7 +412,6 @@ function solveSudoku(board) {
     }
     return false
   }
-  //naked triplet is a triplet that have only three values to set in common (in line, column or square)
   function checkForNakedTriplets() {
 
     for (let index = 0; index < 9; index++) {

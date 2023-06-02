@@ -1,67 +1,90 @@
-@import 'reset.css'
+@use './constants' as *
+@import './reset.css'
+
 body
-    font-size: 30px
-    font-family: sans-serif
+  @include font_default
+
 .content
-    height: 90vh
-    width: 100vw
-    display: flex
-    justify-content: center
-    align-items: center
-.button-wrapper
-    display: flex
-    justify-content: center
-    align-items: center
-    height: 10vh
+  min-height: 90vh
+  min-width: 95vw
+
+  @include line_centering
+
+.solveButton-wrapper
+  height: 3vh
+
+  @include line_centering
+
 .board
-    outline: 4px solid black
-    display: flex
-    flex-wrap: wrap
-    min-width: 540px
-    max-width: 540px
-    height: 540px
-.square
-    outline: 2px solid black
-    display: flex
-    flex-wrap: wrap
-    width: 180px
-    height: 180px
+  @include board_size
+
+  outline: $OUTLINE_OUTER
+
+  display: flex
+  flex-wrap: wrap
+
+.row
+  display: flex
+
+  &[data-index = '2'],
+  &[data-index = '5']
+    border-bottom: $OUTLINE_INNER_BOLD
+
 .cell
-    outline: 1px solid black
-    display: flex
-    justify-content: center
-    align-items: center
-    width: 60px
-    height: 60px
-    &:hover
-        cursor: pointer
-.numbers
-    width: 60px
-    height: 540px
-    outline: 1.5px solid black
-    position: relative
-    left: 60px
-    display: flex
-    flex-direction: column
-.number
-    outline: 1px solid black 
-    height: 60px
-    width: 60px
-    display: flex
-    justify-content: center
-    align-items: center
-    &:hover
-        cursor: pointer
-.button
-    font-size: 30px
-    font-family: sans-serif
-    height: 60px
-    width: 180px
-    top: 340px
-    right: 420px
+  @include cell_size
+
+  user-select: none
+  outline: $OUTLINE_INNER_THIN
+  @include line_centering
+
+  &[data-column = '2'],
+  &[data-column = '5']
+    border-right: $OUTLINE_INNER_BOLD
+
+  &:hover
+    cursor: pointer
+    background-color: $HOVER_COLOR
+
+.numberButtons
+  width: $CELL_SIZE
+  height: $BOARD_SIZE
+
+  user-select: none
+  outline: $OUTLINE_INNER_MEDIUM
+
+  position: relative
+  left: $CELL_SIZE
+
+  display: flex
+  flex-direction: column
+
+.numberButton
+  @include cell_size
+
+  outline: $OUTLINE_INNER_THIN
+  @include line_centering
+
+  &:hover
+    cursor: pointer
+    background-color: $HOVER_COLOR
+
+.solveButton
+  font-size: calc($CELL_SIZE / 2)
+  height: $CELL_SIZE
+  width: ($CELL_SIZE * 3)
+  top: 340px
+  right: 420px
+
+.not-valid
+  background-color: $NOT_VALID_CELL_COLOR
+  &:hover
+    background-color: $ERROR_COLOR
+
 .active
-    background-color: lightGrey
-.validate-error
-    background-color: rgba(255, 0, 0, 0.3) !important
+  @include active_color
+
 .chosen-number
-    background-color: rgba(255, 255, 0, 0.3)
+  @include chosen_number_color
+
+.validate-error
+  @include error_color

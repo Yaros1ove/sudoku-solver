@@ -1,0 +1,52 @@
+// colors
+$ERROR_COLOR: rgba(255, 0, 0, 0.3)
+$CHOSEN_NUMBER_COLOR: rgba(255, 255, 0, 0.3)
+$NOT_VALID_CELL_COLOR: rgba(100, 100, 0, 0.3)
+$ACTIVE_COLOR: rgba(90, 90, 90, 0.3)
+$HOVER_COLOR: rgba(215, 215, 215, 0.3)
+
+@mixin error_color
+  background-color: $ERROR_COLOR
+  &:hover
+    background-color: $ERROR_COLOR
+
+@mixin chosen_number_color
+  background-color: $CHOSEN_NUMBER_COLOR
+  &:hover
+    background-color: $CHOSEN_NUMBER_COLOR
+
+@mixin active_color
+  background-color: $ACTIVE_COLOR
+  &:hover
+    background-color: $ACTIVE_COLOR
+
+// fonts
+@mixin font_default
+  font-size: 30px
+  font-family: sans-serif
+
+// positioning
+@mixin line_centering
+  display: flex
+  justify-content: center
+  align-items: center
+
+// sizes
+$OUTLINE_OUTER_WIDTH: 4px
+
+$CELL_SIZE: 60px
+$BOARD_SIZE: calc(calc($CELL_SIZE * 9) + $OUTLINE_OUTER_WIDTH)
+
+@mixin cell_size
+  width: $CELL_SIZE
+  height: $CELL_SIZE
+
+@mixin board_size
+  width: $BOARD_SIZE
+  height: $BOARD_SIZE
+
+// styles
+$OUTLINE_OUTER: $OUTLINE_OUTER_WIDTH solid black
+$OUTLINE_INNER_BOLD: 3px solid black
+$OUTLINE_INNER_MEDIUM: 1.5px solid black
+$OUTLINE_INNER_THIN: 1px solid black

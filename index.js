@@ -14,7 +14,6 @@ function addListenerToBoardDOM() {
   boardDOM.addEventListener('click', insertOrDeleteCurrentNumberInCell)
 }
 
-
 function getNumberButtons() {
   return document.querySelector('.numberButtons')
 }
@@ -24,7 +23,6 @@ function getNumberButtonsWithListener() {
   numberButtons.addEventListener('click', changeCurrentNumber)
 }
 
-
 function getSolveButtonWithListener() {
   const solveButton = document.querySelector('.solveButton')
   solveButton.addEventListener('click', solve)
@@ -32,14 +30,13 @@ function getSolveButtonWithListener() {
 }
 
 
-function isNumberButton(element) {
-  return element.classList.contains('numberButton')
+function getCurrentNumber() {
+  return currentNumber
 }
 
-function isCell(element) {
-  return element.classList.contains('cell')
+function setCurrentNumber(newValue) {
+  currentNumber = newValue
 }
-
 
 function changeCurrentNumber(event) {
   const numberButton = event.target
@@ -62,28 +59,89 @@ function setActiveClassToNumberButton(newNumberButton) {
   newNumberButton.classList.add('active')
 }
 
-function setCurrentNumber(newValue) {
-  currentNumber = newValue
-}
-
-function getCurrentNumber() {
-  return currentNumber
-}
-
-
 function colorCellsWithCurrentNumber() {
+  removeAllNotValidColors()
+  removeAllChosenNumberColors()
+
   const currentNumber = getCurrentNumber()
 
   for (const row of boardCells) {
     for (const cell of row) {
 
-      if (cell.innerHTML === currentNumber) {
+      if (cell.innerHTML === currentNumber && currentNumber !== '') {
+
         colorCellWithCurrentNumber(cell)
-      } else {
-        removeChosenColorFromCell(cell)
+        colorNotValidCellsForCell(cell)
       }
 
     }
+  }
+}
+
+function colorNotValidCellsForCell(cell) {
+  colorNotValidCellsInLineForCell(cell)
+
+  colorNotValidCellsInColumnForCell(cell)
+
+  colorNotValidCellsInSquareForCell(cell)
+}
+
+function colorAllNotValidCellsForCurrentNumber() {
+  removeAllNotValidColors()
+  const chosenNumberCells = document.querySelectorAll('.chosen-number')
+
+  for (const cell of chosenNumberCells) {
+    colorNotValidCellsForCell(cell)
+  }
+}
+
+function colorNotValidCellsInLineForCell(cell) {
+
+  const lineIndex = cell.dataset.row
+  const line = getLineFromIndex(lineIndex)
+
+  colorNotValidCells(line)
+}
+
+function colorNotValidCellsInColumnForCell(cell) {
+  
+  const columnIndex = cell.dataset.column
+  const column = getColumnFromIndex(columnIndex)
+
+  colorNotValidCells(column)
+}
+
+function colorNotValidCellsInSquareForCell(cell) {
+  
+  const squareIndex = cell.dataset.square
+  const square = getSquareFromIndex(squareIndex)
+
+  colorNotValidCells(square)
+}
+
+function colorNotValidCells(cells) {
+  for (const cell of cells) {
+    colorOneNotValidCell(cell)
+  }
+}
+
+function colorOneNotValidCell(cell) {
+  cell.classList.add('not-valid')
+}
+
+function removeAllNotValidColors() {
+  const notValidCells = document.querySelectorAll('.not-valid')
+
+  for (const cell of notValidCells) {
+    removeNotValidColorFromCell(cell)
+  }
+}
+
+function removeAllChosenNumberColors() {
+  const chosenNumberCells = document.querySelectorAll('.chosen-number')
+
+  for (const cell of chosenNumberCells) {
+    removeChosenColorFromCell(cell)
   }
 }
 
@@ -93,34 +151,39 @@ function colorCellWithCurrentNumber(cell) {
   if (currentNumber) cell.classList.add('chosen-number')
 }
 
+function removeNotValidColorFromCell(cell) {
+  cell.classList.remove('not-valid')
+}
+
 function removeChosenColorFromCell(cell) {
   cell.classList.remove('chosen-number')
 }
 
-function colorCellWithError(cell) {
+function colorErrorCells(cells) {
+  for (const cell of cells) {
+    colorOneErrorCell(cell)
+  }
+}
+
+function colorOneErrorCell(cell) {
   cell.classList.add('validate-error')
   isBoardValid = false
 }
 
-function removeErrorColorFromCell(cell) {
+function removeColorFromErrorCell(cell) {
   cell.classList.remove('validate-error')
 }
 
+function clearAllErrors() {
+  for (const line of boardCells) {
+    for (const cell of line) {
 
-function insertOrDeleteCurrentNumberInCell(event) {
-  const cell = event.target
-  if (!isCell(cell)) return
-  const currentNumber = getCurrentNumber()
+      removeColorFromErrorCell(cell)
 
-  if (cell.innerHTML === currentNumber) {
-    cell.innerHTML = ''
-    removeChosenColorFromCell(cell)
-  } else {
-    cell.innerHTML = currentNumber
-    colorCellWithCurrentNumber(cell)
+    }
   }
 
-  validateBoard()
+  isBoardValid = true
 }
 
 
@@ -145,24 +208,68 @@ function validateBoard() {
   } else {
     disableSolveButton()
   }
-}
 
-function clearAllErrors() {
-  for (const line of boardCells) {
-    for (const cell of line) {
-
-      removeErrorColorFromCell(cell)
-
-    }
-  }
-
-  isBoardValid = true
 }
 
 function validateLines() {
-  for (const line of boardCells) {
+  for (let index = 0; index <= 8; index++) {
+
+    const line = getLineFromIndex(index)
+
     validateCells(line)
+
   }
+}
+
+function validateColumns() {
+  for (let index = 0; index <= 8; index++) {
+
+    const column = getColumnFromIndex(index)
+
+    validateCells(column)
+
+  }
+}
+
+function validateSquares() {
+  for (let index = 0; index <= 8; index++) {
+
+    const square = getSquareFromIndex(index)
+
+    validateCells(square)
+
+  }
+}
+
+function validateCells(cells) {
+  if (isCellsEmpty(cells)) return
+
+  for (let i = 1; i <= 9; i++) {
+    const entries = cells.filter(cell => cell.innerHTML === i.toString())
+
+    if (entries.length > 1) {
+      colorErrorCells(entries)
+    }
+  }
+
+}
+
+
+function insertOrDeleteCurrentNumberInCell(event) {
+  const cell = event.target
+  if (!isCell(cell)) return
+  const currentNumber = getCurrentNumber()
+
+  if (cell.innerHTML === currentNumber) {
+    cell.innerHTML = ''
+    removeChosenColorFromCell(cell)
+  } else {
+    cell.innerHTML = currentNumber
+    colorCellWithCurrentNumber(cell)
+  }
+
+  validateBoard()
+  colorAllNotValidCellsForCurrentNumber()
 }
 
 function createInsertedValuesWithIndexesMapFromCells(cells) {
@@ -201,12 +308,6 @@ function getValidateErrorIndexesFromMap(map) {
   return errorIndexes
 }
 
-function colorCellWithErrorFromCells(cells) {
-  for (const cell of cells) {
-    colorCellWithError(cell)
-  }
-}
-
 function getErrorCellsFromIndexesAndCells(indexes, cells) {
   const errorCells = []
 
@@ -217,26 +318,8 @@ function getErrorCellsFromIndexesAndCells(indexes, cells) {
   return errorCells
 }
 
-function validateCells(cells) {
-  if (!cells.find(cell => cell.innerHTML)) return
 
-  const insertedValuesWithIndexes = createInsertedValuesWithIndexesMapFromCells(cells)
-  const errorIndexes = getValidateErrorIndexesFromMap(insertedValuesWithIndexes)
-  const errorCells = getErrorCellsFromIndexesAndCells(errorIndexes, cells)
-
-  colorCellWithErrorFromCells(errorCells)
-}
-
-function validateColumns() {
-  const columns = createColumnsFromLines(boardCells)
-
-  for (const column of columns) {
-    validateCells(column)
-  }
-
-}
-
-function initializeArrayWithNineEmptyArrays() {
+function initializeEmptyBoard() {
   const array = []
 
   for (let index = 0; index < 9; index++) {
@@ -246,44 +329,16 @@ function initializeArrayWithNineEmptyArrays() {
   return array
 }
 
-function createColumnsFromLines(lines) {
-  const columns = initializeArrayWithNineEmptyArrays()
-
-  for (const line of lines) {
-    line.forEach((cell, index) => {
-
-      columns[index].push(cell)
-
-    })
-  }
-
-  return columns
+function getLineFromIndex(index) {
+  return Array.from(document.querySelectorAll(`[data-row="${index}"]`))
 }
 
-function validateSquares() {
-  const squares = createSquaresFromLines(boardCells)
-
-  for (const square of squares) {
-    validateCells(square)
-  }
+function getColumnFromIndex(index) {
+  return Array.from(document.querySelectorAll(`[data-column="${index}"]`))
 }
 
-function getSquareIndexFromLineAndColumnIndexes(lineIndex, columnIndex) {
-  return 3 * Math.floor(lineIndex / 3) + Math.floor(columnIndex / 3)
-}
-
-function createSquaresFromLines(lines) {
-  const squares = initializeArrayWithNineEmptyArrays()
-
-  lines.forEach((line, lineIndex) => {
-    line.forEach((cell, columnIndex) => {
-
-      squares[getSquareIndexFromLineAndColumnIndexes(lineIndex, columnIndex)].push(cell)
-
-    })
-  })
-
-  return squares
+function getSquareFromIndex(index) {
+  return Array.from(document.querySelectorAll(`[data-square="${index}"]`))
 }
 
 function fillBoardWithNumbersFromArray(array) {
@@ -310,15 +365,25 @@ function getBoardReadyForSolvingFromCells(cells) {
   return boardReadyForSolving
 }
 
+
+function isNumberButton(element) {
+  return element.classList.contains('numberButton')
+}
+
+function isCell(element) {
+  return element.classList.contains('cell')
+}
+
 function isBoardEmpty() {
   for (const line of boardCells) {
-    if (!isLineEmpty(line)) return false
+    if (!isCellsEmpty(line)) return false
   }
 
   return true
 }
-function isLineEmpty(line) {
-  if (line.find(cell => cell.innerHTML)) return false
+
+function isCellsEmpty(cells) {
+  if (cells.find(cell => cell.innerHTML)) return false
 
   return true
 }
@@ -332,7 +397,7 @@ addListenerToBoardDOM()
 const boardCells = getBoardCells()
 const solveButton = getSolveButtonWithListener()
 
-const test1 = [
+const testBoard1 = [
   ["5", "3", ".", ".", "7", ".", ".", ".", "."],
   ["6", ".", ".", "1", "9", "5", ".", ".", "."],
   [".", "9", "8", ".", ".", ".", ".", "6", "."],
@@ -343,23 +408,41 @@ const test1 = [
   [".", ".", ".", "4", "1", "9", ".", ".", "5"],
   [".", ".", ".", ".", "8", ".", ".", "7", "9"]
 ]
-fillBoardWithNumbersFromArray(test1)
+const testBoard2 = [
+  ["2", "4", ".", ".", ".", "5", "7", ".", "."],
+  [".", "9", ".", ".", ".", ".", ".", ".", "."],
+  [".", ".", "7", ".", ".", ".", "1", ".", "."],
+  [".", ".", ".", "7", "8", ".", "9", ".", "5"],
+  [".", ".", ".", "6", ".", ".", ".", ".", "."],
+  [".", ".", ".", ".", "3", "4", ".", "1", "."],
+  [".", ".", ".", "4", ".", ".", ".", "7", "."],
+  [".", ".", ".", "8", ".", "1", ".", "9", "."],
+  ["9", "2", ".", ".", ".", ".", ".", ".", "6"],
+]
+
+
+fillBoardWithNumbersFromArray(testBoard2)
 
 
 let isBoardValid = !isBoardEmpty()
+
 if (!isBoardValid) {
   disableSolveButton()
 }
 
 
-
-
 function solve() {
+
   const boardReadyForSolving = getBoardReadyForSolvingFromCells(boardCells)
   const solved = solveSudoku(boardReadyForSolving)
+
   if (solved) {
+
     fillBoardWithNumbersFromArray(solved)
+
   } else {
+
     alert("Can't solve that sudoku")
+
   }
 }
